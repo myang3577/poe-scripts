@@ -4,8 +4,9 @@ class CrucibleHelper:
         return [
             {
                 "name": item["item"]["name"],
-                "whisper_token": item["listing"].get("whisper_token"),
-                "whisper": item["listing"].get("whisper"),
+                "baseType": item["item"]["baseType"],
+                # "whisper_token": item["listing"].get("whisper_token"),
+                # "whisper": item["listing"].get("whisper"),
                 "price": item["listing"].get("price"),
                 "crucible_nodes": item["item"]["crucible"]["nodes"],
             }
@@ -24,7 +25,6 @@ class CrucibleHelper:
                 continue
 
             new_item = extracted_item | {"node": node}
-            del new_item["crucible_nodes"]
 
             extracted_items_with_nodes += [new_item]
 

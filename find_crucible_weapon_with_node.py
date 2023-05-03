@@ -1,5 +1,5 @@
 import argparse
-import itertools
+import configparser
 import json
 import logging
 
@@ -12,25 +12,53 @@ Utils.setup_logging()
 LOG = logging.getLogger(__name__)
 
 
+def valid_pos_conditions(item, pos_conditions):
+    valid = valid_node_pos(item["node"], pos_conditions.get("valid_pos_list", []))
+    valid = valid and valid_empty_pos(
+        item["crucible_nodes"], pos_conditions.get("empty_pos_list", [])
+    )
+
+    return valid
+
+
+def valid_node_pos(node, valid_pos_list):
+    return any(
+        node["orbit"] == pos["o"] and node["orbitIndex"] == pos["oi"]
+        for pos in valid_pos_list
+    )
+
+
+def valid_empty_pos(crucible_nodes, empty_pos_list):
+    if isinstance(crucible_nodes, dict):
+        crucible_nodes = list(crucible_nodes.values())
+
+    return not any(
+        node["orbit"] == empty_pos["o"] and node["orbitIndex"] == empty_pos["oi"]
+        for node in crucible_nodes
+        for empty_pos in empty_pos_list
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description="Find crucible weapons to combine")
-    parser.add_argument("-o", type=int, required=True, default=None)
-    parser.add_argument("-oi", type=int, required=True, default=None)
     parser.add_argument(
         "--input_file", type=str, required=False, default="crucible_node_to_find.json"
     )
+    parser.add_argument("-c", type=int, required=False, default=30)
 
     args = parser.parse_args()
 
-    poe_client = PathOfExileClient(
-        posessid="UPDATE_ME",
-        username="UPDATE_ME",
-    )
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    posessid = config["POE"]["POESESSID"]
+    username = config["POE"]["USERNAME"]
+
+    poe_client = PathOfExileClient(posessid=posessid, username=username)
 
     with open(args.input_file) as f:
         input = json.load(f)
 
-    items = poe_client.query_trade(payload=input["query"], result_count=30)
+    items = poe_client.query_trade(payload=input["query"], result_count=args.c)
     extracted_items = CrucibleHelper.extract_from_items(items)
     items_with_node = CrucibleHelper.extract_node(
         extracted_items=extracted_items,
@@ -39,15 +67,12 @@ def main():
 
     LOG.info(f"Found [{len(items_with_node)}] items for query.")
 
-    orbit = args.o
-    orbit_index = args.oi
-
-    LOG.info(f"Filtering for orbit [{orbit}] and orbit index [{orbit_index}].")
+    LOG.info(f"Filtering items with valid node position.")
 
     filtered_items = [
         item
         for item in items_with_node
-        if item["node"]["orbit"] == orbit and item["node"]["orbitIndex"] == orbit_index
+        if valid_pos_conditions(item=item, pos_conditions=input["pos_conditions"])
     ]
 
     LOG.info(f"Found [{len(filtered_items)}] items.")
