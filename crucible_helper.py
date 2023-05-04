@@ -48,3 +48,29 @@ class CrucibleHelper:
             return list(crucible_nodes.values())
 
         return crucible_nodes
+
+
+a = {
+    "query": {
+        "status": {"option": "onlineleague"},
+        # "term": "Name here",
+        "stats": [
+            {"type": "and", "filters": []},
+            {"filters": [], "type": "crucible"},
+            {
+                "filters": [{"id": "crucible.mod_51047"}, {"id": "crucible.mod_2397"}],
+                "type": "crucible",
+                "value": {"min": 1},
+            },
+            {
+                "filters": [{"id": "crucible.mod_58320"}],
+                "type": "crucible",
+                "value": {"min": 1},
+            },
+        ],
+        "filters": {
+            "type_filters": {"filters": {"category": {"option": "weapon.wand"}}}
+        },
+    },
+    "sort": {"price": "asc"},
+}

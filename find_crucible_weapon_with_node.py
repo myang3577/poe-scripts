@@ -1,7 +1,9 @@
 import argparse
 import configparser
+import copy
 import json
 import logging
+import urllib.parse
 
 from crucible_helper import CrucibleHelper
 from path_of_exile_client import PathOfExileClient
@@ -34,6 +36,27 @@ def valid_empty_pos(crucible_nodes, empty_pos_list):
         for node in crucible_nodes
         for empty_pos in empty_pos_list
     )
+
+
+def augment_query_with_filtered_items(filtered_items, query):
+    new_query = copy.deepcopy(query)
+
+    for i in range(3):
+        skill_nums = [
+            item["crucible_nodes"][min(i, len(item["crucible_nodes"]) - 1)]["skill"]
+            for item in filtered_items
+        ]
+        filters = [{"id": f"crucible.mod_{n}"} for n in skill_nums]
+
+        stat_group = {
+            "filters": filters,
+            "type": "crucible",
+            "value": {"min": 1},
+        }
+
+        new_query["query"]["stats"] += [stat_group]
+
+    return new_query
 
 
 def main():
@@ -73,6 +96,13 @@ def main():
     ]
 
     LOG.info(f"Found [{len(filtered_items)}] items.")
+
+    new_query = augment_query_with_filtered_items(filtered_items, input["query"])
+    new_query = json.dumps(new_query)
+    new_query = urllib.parse.quote(new_query)
+    filtered_url = f"https://www.pathofexile.com/trade/search/Crucible?q={new_query}"
+
+    filtered_items = [{"filtered_url": filtered_url}] + filtered_items
 
     with open("items_with_node.json", "w") as f:
         json.dump(items_with_node, f, indent=4)
