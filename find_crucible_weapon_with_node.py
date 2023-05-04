@@ -41,12 +41,15 @@ def valid_empty_pos(crucible_nodes, empty_pos_list):
 def augment_query_with_filtered_items(filtered_items, query):
     new_query = copy.deepcopy(query)
 
-    for i in range(3):
+    for i in range(2):
         skill_nums = [
             item["crucible_nodes"][min(i, len(item["crucible_nodes"]) - 1)]["skill"]
             for item in filtered_items
         ]
         filters = [{"id": f"crucible.mod_{n}"} for n in skill_nums]
+
+        if not filters:
+            continue
 
         stat_group = {
             "filters": filters,
