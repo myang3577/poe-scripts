@@ -14,6 +14,18 @@ Utils.setup_logging()
 LOG = logging.getLogger(__name__)
 
 
+def get_query_url(query):
+    query = json.dumps(query)
+    query = urllib.parse.quote(query)
+    return f"https://www.pathofexile.com/trade/search/Crucible?q={query}"
+
+
+def add_name_to_query(query, name):
+    query = copy.deepcopy(query)
+    query["query"]["term"] = name
+    return query
+
+
 def valid_pos_conditions(item, pos_conditions):
     valid = valid_node_pos(item["node"], pos_conditions.get("valid_pos_list", []))
     valid = valid and valid_empty_pos(
@@ -62,6 +74,18 @@ def augment_query_with_filtered_items(filtered_items, query):
     return new_query
 
 
+def augment_filtered_items_with_named_url(filtered_items, query):
+    return [
+        {
+            "named_url": get_query_url(query=add_name_to_query(query, item["name"]))
+            if item["name"]
+            else "empty name"
+        }
+        | item
+        for item in filtered_items
+    ]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Find crucible weapons to combine")
     parser.add_argument(
@@ -97,13 +121,14 @@ def main():
         for item in items_with_node
         if valid_pos_conditions(item=item, pos_conditions=input["pos_conditions"])
     ]
+    filtered_items = augment_filtered_items_with_named_url(
+        filtered_items=filtered_items, query=input["query"]
+    )
 
     LOG.info(f"Found [{len(filtered_items)}] items.")
 
-    new_query = augment_query_with_filtered_items(filtered_items, input["query"])
-    new_query = json.dumps(new_query)
-    new_query = urllib.parse.quote(new_query)
-    filtered_url = f"https://www.pathofexile.com/trade/search/Crucible?q={new_query}"
+    filtered_query = augment_query_with_filtered_items(filtered_items, input["query"])
+    filtered_url = get_query_url(filtered_query)
 
     filtered_items = [{"filtered_url": filtered_url}] + filtered_items
 
