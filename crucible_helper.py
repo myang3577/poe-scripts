@@ -8,7 +8,7 @@ class CrucibleHelper:
                 # "whisper_token": item["listing"].get("whisper_token"),
                 # "whisper": item["listing"].get("whisper"),
                 "price": item["listing"].get("price"),
-                "crucible_nodes": item["item"]["crucible"]["nodes"],
+                "crucible_nodes": CrucibleHelper.__get_crucible_nodes(item),
             }
             for item in items
         ]
@@ -39,3 +39,12 @@ class CrucibleHelper:
             for stat in node["stats"]:
                 if search_text.lower() in stat.lower():
                     return node
+
+    @staticmethod
+    def __get_crucible_nodes(item):
+        crucible_nodes = item["item"]["crucible"]["nodes"]
+
+        if isinstance(crucible_nodes, dict):
+            return list(crucible_nodes.values())
+
+        return crucible_nodes

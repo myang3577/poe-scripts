@@ -29,9 +29,6 @@ def valid_node_pos(node, valid_pos_list):
 
 
 def valid_empty_pos(crucible_nodes, empty_pos_list):
-    if isinstance(crucible_nodes, dict):
-        crucible_nodes = list(crucible_nodes.values())
-
     return not any(
         node["orbit"] == empty_pos["o"] and node["orbitIndex"] == empty_pos["oi"]
         for node in crucible_nodes
