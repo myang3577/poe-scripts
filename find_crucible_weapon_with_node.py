@@ -36,6 +36,9 @@ def valid_pos_conditions(item, pos_conditions):
 
 
 def valid_node_pos(node, valid_pos_list):
+    if not valid_pos_list:
+        return True
+
     return any(
         node["orbit"] == pos["o"] and node["orbitIndex"] == pos["oi"]
         for pos in valid_pos_list
@@ -91,7 +94,7 @@ def main():
     parser.add_argument(
         "--input_file", type=str, required=False, default="crucible_node_to_find.json"
     )
-    parser.add_argument("-c", type=int, required=False, default=30)
+    parser.add_argument("-c", type=int, required=False, default=100)
 
     args = parser.parse_args()
 

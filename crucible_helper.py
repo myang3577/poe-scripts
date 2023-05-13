@@ -35,6 +35,9 @@ class CrucibleHelper:
         if isinstance(nodes, dict):
             nodes = list(nodes.values())
 
+        if not search_text:
+            return nodes
+
         for node in nodes:
             for stat in node["stats"]:
                 if search_text.lower() in stat.lower():
