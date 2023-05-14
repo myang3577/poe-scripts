@@ -112,7 +112,7 @@ def main():
     extracted_items = CrucibleHelper.extract_from_items(items)
     items_with_node = CrucibleHelper.extract_node(
         extracted_items=extracted_items,
-        search_text=input["crucible_mod_search_text"],
+        search_texts=input["crucible_mod_search_text"],
     )
 
     LOG.info(f"Found [{len(items_with_node)}] items for query.")

@@ -6,7 +6,7 @@ class CrucibleHelper:
                 "name": item["item"]["name"],
                 "baseType": item["item"]["baseType"],
                 # "whisper_token": item["listing"].get("whisper_token"),
-                # "whisper": item["listing"].get("whisper"),
+                "whisper": item["listing"].get("whisper"),
                 "price": item["listing"].get("price"),
                 "crucible_nodes": CrucibleHelper.__get_crucible_nodes(item),
             }
@@ -14,12 +14,12 @@ class CrucibleHelper:
         ]
 
     @staticmethod
-    def extract_node(extracted_items, search_text):
+    def extract_node(extracted_items, search_texts):
         extracted_items_with_nodes = []
 
         for extracted_item in extracted_items:
             node = CrucibleHelper.find_node(
-                nodes=extracted_item["crucible_nodes"], search_text=search_text
+                nodes=extracted_item["crucible_nodes"], search_texts=search_texts
             )
             if not node:
                 continue
@@ -31,16 +31,16 @@ class CrucibleHelper:
         return extracted_items_with_nodes
 
     @staticmethod
-    def find_node(nodes, search_text):
+    def find_node(nodes, search_texts):
         if isinstance(nodes, dict):
             nodes = list(nodes.values())
 
-        if not search_text:
+        if not search_texts:
             return nodes
 
         for node in nodes:
             for stat in node["stats"]:
-                if search_text.lower() in stat.lower():
+                if any(st.lower() in stat.lower() for st in search_texts):
                     return node
 
     @staticmethod
